@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "author": "JAV2005",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 28.8, "left": 148.84, "attrs": {} },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 111.6,
+      "left": -73,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 147.95,
+      "left": -28.8,
+      "attrs": { "value": "220" }
+    },
+    { "type": "wokwi-gnd", "id": "gnd1", "top": 163.2, "left": -67.8, "attrs": {} },
+    { "type": "wokwi-led", "id": "led2", "top": 54, "left": -73, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 109.55,
+      "left": -28.8,
+      "attrs": { "value": "220" }
+    },
+    { "type": "wokwi-gnd", "id": "gnd2", "top": 105.6, "left": -96.6, "attrs": {} },
+    { "type": "wokwi-mpu6050", "id": "imu1", "top": 61.42, "left": 290.32, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": 152.3, "left": 297.4, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "pot2", "top": -87.7, "left": 67, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc1", "top": -56.84, "left": 38.4, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd3", "top": -48, "left": 9, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc2", "top": -8.84, "left": 355.2, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd4", "top": -9.6, "left": 325.8, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd5", "top": 249.6, "left": 316.2, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc3", "top": 192.76, "left": 384, "attrs": {} },
+    {
+      "type": "wokwi-text",
+      "id": "text1",
+      "top": 134.4,
+      "left": 374.4,
+      "attrs": { "text": "Sensor de lluvia\nSalida D0\n" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text2",
+      "top": -115.2,
+      "left": 96,
+      "attrs": { "text": "Sensor de humedad\n" }
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": -22.4,
+      "left": 437.6,
+      "attrs": { "pins": "i2c" }
+    },
+    { "type": "wokwi-gnd", "id": "gnd6", "top": -57.6, "left": 460.2, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc4", "top": -56.84, "left": 422.4, "attrs": {} },
+    {
+      "type": "wokwi-text",
+      "id": "text3",
+      "top": -105.6,
+      "left": 345.6,
+      "attrs": {
+        "text": "I2C para el MPU y para el lcd, ambos usan los mismos puertos pero diferente direccion en codigo"
+      }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "led1:A", "r1:1", "green", [ "v0" ] ],
+    [ "r1:2", "esp:12", "green", [ "v0" ] ],
+    [ "led1:C", "gnd1:GND", "green", [ "v0" ] ],
+    [ "led2:A", "r2:1", "green", [ "v0" ] ],
+    [ "r2:2", "esp:14", "green", [ "v0" ] ],
+    [ "led2:C", "gnd2:GND", "green", [ "v0" ] ],
+    [ "esp:VP", "pot2:SIG", "green", [ "h-38.25", "v-57.6", "h76.8" ] ],
+    [ "pot2:VCC", "vcc1:VCC", "red", [ "v9.6", "h-68" ] ],
+    [ "pot2:GND", "gnd3:GND", "black", [ "v28.8", "h-67.2", "v-67.2", "h-9.6" ] ],
+    [ "imu1:SCL", "esp:22", "green", [ "v-9.6", "h-76.72", "v19.2" ] ],
+    [ "imu1:SDA", "esp:21", "green", [ "v-28.8", "h-57.52", "v67.2" ] ],
+    [ "imu1:VCC", "vcc2:VCC", "red", [ "v0" ] ],
+    [ "imu1:GND", "gnd4:GND", "black", [ "v0" ] ],
+    [ "esp:4", "pot1:SIG", "green", [ "h28.8", "v67.2", "h57.6" ] ],
+    [ "pot1:GND", "gnd5:GND", "black", [ "v0" ] ],
+    [ "pot1:VCC", "vcc3:VCC", "red", [ "v28.8", "h28" ] ],
+    [ "esp:21", "lcd1:SDA", "orange", [ "h9.6", "v19.2", "h163.2", "v-96" ] ],
+    [ "esp:22", "lcd1:SCL", "#8f4814", [ "h9.6", "v-105.6", "h153.6", "v67.2" ] ],
+    [ "lcd1:VCC", "vcc4:VCC", "red", [ "h0" ] ],
+    [ "lcd1:GND", "gnd6:GND", "black", [ "h-38.4", "v-76.8", "h67.2" ] ],
+    [ "imu1:AD0", "gnd4:GND", "black", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
