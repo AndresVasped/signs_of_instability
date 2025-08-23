@@ -1,1 +1,3 @@
 En este proyecto, emplearemos la ESP32 junto con el framework ESP-IDF para desarrollar un sistema capaz de predecir posibles precipitaciones en zonas vulnerables a deslizamientos, como la región de Sabana Centro en Cundinamarca.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+In this project, we will use ESP32 together with the ESP-IDF framework to develop a system capable of predicting potential precipitation in areas vulnerable to landslides, such as the Sabana Centro region in Cundinamarca.
