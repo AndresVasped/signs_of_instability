@@ -1,5 +1,3 @@
-#include "esp_lcd_io_i2c.h"
-#include "esp_lcd_panel_io.h"
 #include <i2c-lcd1602.h>
 #include <smbus.h>
 #include <mpu6050.h>
@@ -8,6 +6,7 @@
 #include "driver/i2c.h"
 #include "driver/adc.h"
 #include "math.h"
+
 /*-----------------definimos los puertos de la esp32-----------------*/
 //sensores 
 #define PIN_HUMEDAD  GPIO_NUM_36
@@ -66,11 +65,11 @@ void set_i2c()
 
     /*configuramos los pull ups, para simulacion estaran en enable pero a la hora de pasar el firmware a la esp descativarlo(DISABLE)
     y agregar resistencias pull up de 4.7 kΩ a vcc*/
-    //conf.scl_pullup_en=GPIO_PULLUP_ENABLE;
-    //conf.sda_pullup_en=GPIO_PULLUP_ENABLE;
+    conf.scl_pullup_en=GPIO_PULLUP_ENABLE;
+    conf.sda_pullup_en=GPIO_PULLUP_ENABLE;
 
-    conf.scl_pullup_en=GPIO_PULLUP_DISABLE;
-    conf.sda_pullup_en=GPIO_PULLUP_DISABLE;
+    //conf.scl_pullup_en=GPIO_PULLUP_DISABLE;
+    //conf.sda_pullup_en=GPIO_PULLUP_DISABLE;
 
     //configuramos la frecuencia
     conf.master.clk_speed=I2C_MASTER_FREQ_HZ;
@@ -88,7 +87,7 @@ void set_adc()
     adc1_config_width(ADC_WIDTH_BIT_12);  // Precisión de 12 bits (0-4095)
 
     /*En la ficha tecnica de la ESP32 ADC1_CHA0 es el GPIO36, en nuestro caso ese esta para el sensor de humedad*/
-    adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11);  // Rango 0-3.3V para ADC_ATTEN
+    adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_12);  // Rango 0-3.3V para ADC_ATTEN
 }
 int get_humedad_value()
 {
@@ -102,7 +101,7 @@ int get_humedad_value()
 bool get_isRain()
 {
     //retornamos el valor de la lluvia HIGH(1) no esta lloviendo LOW(0) si  esta lloviendo
-    return (gpio_get_level(PIN_LLUVIA));
+    return (gpio_get_level(PIN_LLUVIA)==0);
 }
 void mpu6050_init()
 {
@@ -110,8 +109,9 @@ void mpu6050_init()
     el manejo de la MPU, ahora en esta linea de codigo vamos a instanciar dicho modulo, el ultimo parametro
     es un booleano y indica si la libreria debe hacer la configuracion paar el i2c o no
     en este caso no porque ya la hicimos mas arriba con la funcion set_i2c*/
-    mpuBegin(MPU6050_ACCEL_RANGE_2G, MPU6050_GYRO_RANGE_250DPS, false);//iniciamos el modulo del mpu
+    mpuBegin(MPU6050_ACCEL_RANGE_2G, MPU6050_GYRO_RANGE_250DPS, true);//iniciamos el modulo del mpu
     mpuSetFilterBandwidth(MPU6050_BAND_21_HZ);
+    mpuSetSleepMode(false);
 }
 /*Para hallar la inclinacion usaremos lo que se conoce en aeronautica como ROLL y PITCH, son dos formas para de una u otra forma
 medir la inclinacion o grados de movimiento hacia el eje x o y*/
@@ -127,7 +127,7 @@ struct Inclinaciones get_inclinacion()
         float ax= mpuGetAccelerationX();
         float ay= mpuGetAccelerationY();
         float az= mpuGetAccelerationZ();
-
+        ESP_LOGI("R", "ax: %.2f | ay: %.2f | az: %.2f", ax, ay, az);
         float roll_rad=atan2(ay,sqrt((ax*ax)+(az*az)));
         float pitch_rad=atan2(ax,sqrt((ay*ay)+(az*az)));
 
@@ -137,6 +137,11 @@ struct Inclinaciones get_inclinacion()
         //por si queremos tener un valor estandar en grados
         resultado.inclinacionTotal=sqrt((resultado.roll*resultado.roll)+(resultado.pitch*resultado.pitch));
 
+    }
+    if(ret!=ESP_OK)
+    {
+        ESP_LOGI("R", "mal todo mal");
+        ESP_LOGE("R", "Error code: %s", esp_err_to_name(ret));
     }
     return resultado;
 }
@@ -166,6 +171,8 @@ Ahora ahi algo que se debe tener en cuenta y es el hecho de que el sensor MPU605
 Norte o sur... etc, por lo que es importante a la hora del ensamblaje colocar el mpu en una direccion fija*/
 const char* get_orientacion(float roll, float pich)
 {
+    //ESP_LOGI("R","El valor de roll: %.2f",roll);
+    //ESP_LOGI("R","El valor de pich: %.2f",pich);
     //obtenemos el valor maximo de ambas inclinaciones
     if(roll>pich)
     {
@@ -206,6 +213,7 @@ void set_led(char value)
     }
     
 }
+
 void lcd_init()
 {
     smbus_info = smbus_malloc();
@@ -244,6 +252,7 @@ void alertas_precipitacion()
     
     float vibracion_del_suelo=get_vibraciones();
     struct Inclinaciones inclinacion=get_inclinacion();
+    //ESP_LOGI("R","El valor de inclinacion total: %.2f",inclinacion.inclinacionTotal);
 
     //obtenemos humedad
     int humedad=get_humedad_value();
@@ -253,6 +262,7 @@ void alertas_precipitacion()
     //obtenemos la orientacion
     const char* orientacion=get_orientacion(inclinacion.roll,inclinacion.pitch);
 
+    clean_lcd();
     //si humedad 50% + inclinacion grave , lanza alerta
     if(humedad>=50 && inclinacion.inclinacionTotal>10.0)
     {
@@ -262,14 +272,14 @@ void alertas_precipitacion()
         
     }
     //si humedad 60% + lluvia
-    else if(humedad>60 && !esta_lloviendo)
+    else if(humedad>60 && esta_lloviendo)
     {
         set_led('E');
         write_lcd("Peligro",0,0);
         write_lcd(orientacion,0,1);
     }
     // inclinacion peligro + vibraciones alerta
-    else if(inclinacion.inclinacionTotal>0.8 && vibracion_del_suelo>=0.3)
+    else if(inclinacion.inclinacionTotal>20.0 && vibracion_del_suelo>=0.3)
     {
         set_led('E');
         write_lcd("Peligro",0,0);
@@ -283,7 +293,7 @@ void alertas_precipitacion()
         write_lcd(orientacion,0,1);
     }
     //lluvia + vibraciones peligrosas
-    else if(!esta_lloviendo && vibracion_del_suelo>=2.0)
+    else if(esta_lloviendo && vibracion_del_suelo>=2.0)
     {
         set_led('E');
         write_lcd("Peligro",0,0);
@@ -302,15 +312,15 @@ void app_main()
     //llamamos a las funciones
     set_GPIO();
     set_adc();
-    set_i2c();
+    //set_i2c();
     mpu6050_init();
     lcd_init();
     set_led('G');//inicializamos el led en verde
-    write_lcd("Hola Usuario!",0,0);
     
-
+    
     while (true)
     {
         alertas_precipitacion();
+        vTaskDelay(pdMS_TO_TICKS(500));//agregamos un delay de medio segundo entre lecturas
     }
 }

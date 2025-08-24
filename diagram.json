@@ -93,7 +93,7 @@
     [ "esp:22", "lcd1:SCL", "#8f4814", [ "h9.6", "v-105.6", "h153.6", "v67.2" ] ],
     [ "lcd1:VCC", "vcc4:VCC", "red", [ "h0" ] ],
     [ "lcd1:GND", "gnd6:GND", "black", [ "h-38.4", "v-76.8", "h67.2" ] ],
-    [ "imu1:AD0", "gnd4:GND", "black", [ "v0" ] ]
+    [ "imu1:AD0", "vcc2:VCC", "red", [ "v0" ] ]
   ],
   "dependencies": {}
 }
