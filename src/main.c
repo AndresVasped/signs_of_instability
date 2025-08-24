@@ -157,7 +157,7 @@ float get_vibraciones()
 
         //ya que el modulo de acelerometro mide la fuerza en los 3 ejes por pitagoras sacamos la fuerza total que es la vibracion
         float vibracion=sqrt((ax*ax)+(ay*ay)+(az*az));
-
+        ESP_LOGI("R", "vibracion %.2f",vibracion);
         return vibracion;
     }
     else
@@ -171,8 +171,8 @@ Ahora ahi algo que se debe tener en cuenta y es el hecho de que el sensor MPU605
 Norte o sur... etc, por lo que es importante a la hora del ensamblaje colocar el mpu en una direccion fija*/
 const char* get_orientacion(float roll, float pich)
 {
-    //ESP_LOGI("R","El valor de roll: %.2f",roll);
-    //ESP_LOGI("R","El valor de pich: %.2f",pich);
+    ESP_LOGI("R","El valor de roll: %.2f",roll);
+    ESP_LOGI("R","El valor de pich: %.2f",pich);
     //obtenemos el valor maximo de ambas inclinaciones
     if(roll>pich)
     {
@@ -199,6 +199,7 @@ const char* get_orientacion(float roll, float pich)
     
 }
 
+/*Para esta funcion agregamos G (Good) si todo esta bien encendemos el led verde, E (Error) si ahi problemas encendemos el rojo*/
 void set_led(char value)
 {
     if(value=='G')
@@ -252,10 +253,11 @@ void alertas_precipitacion()
     
     float vibracion_del_suelo=get_vibraciones();
     struct Inclinaciones inclinacion=get_inclinacion();
-    //ESP_LOGI("R","El valor de inclinacion total: %.2f",inclinacion.inclinacionTotal);
-
+    ESP_LOGI("R","El valor de inclinacion total: %.2f",inclinacion.inclinacionTotal);
+    
     //obtenemos humedad
     int humedad=get_humedad_value();
+    ESP_LOGI("R","El valor de humedad es: %.02d",humedad);
     //obtenemos si esta lloviendo
     bool esta_lloviendo=get_isRain();
 
