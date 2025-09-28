@@ -72,11 +72,13 @@ void update_data(int humedad,float lluviaMMP,float inclinacion,float roll,float 
 Datos get_sensor_data();
 
 
+
 //task
 void precuation_rain_task(void *pvParameters);
 void alert_rain_task(void *pvParameters);
 void critical_rain_task(void *pvParameters);
 void update_sensor_data_task(void *pvParameters);
+void lcd_task(void *pvParameters);
 
 
 //wifi

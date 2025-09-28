@@ -36,6 +36,9 @@ void app_main()
 
     xTaskCreate(update_sensor_data_task, "update_sensor_data", 4096, NULL, 5, NULL);
 
+    xTaskCreate(lcd_task, "lcd_task", 4096, NULL, 3, NULL);
+
+
     //tarea con la maxima prioridad
     xTaskCreate(critical_rain_task,"tarea critica",4096,NULL,5,NULL);
 
