@@ -114,14 +114,8 @@ void set_led(char value)
     }
     else if(value=='F')
     {
-        gpio_set_level(LED_VERDE,0);
-        for (;;)//hacemos que el Led rojo parpadee
-        {
-            gpio_set_level(LED_ROJO,1);
-            vTaskDelay(pdMS_TO_TICKS(500));
-            gpio_set_level(LED_ROJO,0);
-            vTaskDelay(pdMS_TO_TICKS(500));   
-        }
+        gpio_set_level(LED_VERDE, 0);
+        gpio_set_level(LED_ROJO, 0);
     }
     
 }

@@ -9,7 +9,6 @@ static void send_to_front_task(int humedad,float lluvia_mmp,const char* alerta,f
 
 void precuation_rain_task(void *pvParameters)
 {
-
     for(;;)
     {
         float rain = get_rain();
@@ -21,35 +20,45 @@ void precuation_rain_task(void *pvParameters)
 
         if(alert)
         {
-            set_led('F');
-            // RECORDAR MANDAR FECHA Y HORA
-            char fecha[30]="000000000000000";
+            char fecha[30] = "000000000000000";
+            bool resolved = false;
+
             for(int i = 0; i < 30; i++)
             {
-                vTaskDelay(pdMS_TO_TICKS(1000));
+                gpio_set_level(LED_VERDE, 0);
+                //Blink red
+                gpio_set_level(LED_ROJO, 1);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                gpio_set_level(LED_ROJO, 0);
+                vTaskDelay(pdMS_TO_TICKS(500));
 
+                // Re-check conditions every second
                 rain = get_rain();
                 humidity = get_humedad_value();
                 inclination = get_inclinacion();
-                bool alert = (rain >= 10.0 && humidity >= 60) ||
-                     (rain >= 10.0 && inclination.inclinacionTotal >= 10.0);
-                if(!alert)
-                {
+
+                alert = (rain >= 10.0 && humidity >= 60) ||
+                        (rain >= 10.0 && inclination.inclinacionTotal >= 10.0);
+
+                if(!alert) {
                     set_buzzer(false);
-                    set_led('G');
+                    set_led('G'); // go back to green
+                    resolved = true;
                     break;
                 }
+            }
 
-                if(i == 29)
-                {
-                    set_buzzer(true);
-                    set_led('E');
-                    // función que manda alerta al front RECORDAR MANDAR TAMBIÉN FECHA Y HORA
-                    send_to_front_task(humidity,rain,"ALERTA PRECAUTIVA: Condiciones de lluvia y humedad elevadas mantenidas por 30 segundos.",inclination.inclinacionTotal,inclination.roll,inclination.pitch,fecha);
-                    ESP_LOGI("R", "%s", "ALERTA PRECAUTIVA: Condiciones de lluvia y humedad elevadas mantenidas por 30 segundos.");
-                }
+            if(!resolved) {
+                set_buzzer(true);
+                set_led('E'); // solid red
+                send_to_front_task(humidity, rain,
+                                   "ALERTA PRECAUTIVA: Condiciones mantenidas por 30 segundos.",
+                                   inclination.inclinacionTotal, inclination.roll, inclination.pitch, fecha);
+                ESP_LOGI("R", "%s", "ALERTA PRECAUTIVA lanzada.");
             }
         }
+       
+
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -67,35 +76,45 @@ void alert_rain_task(void *pvParameters)
 
         if(alert)
         {
-            set_led('F');
-            // RECORDAR MANDAR FECHA Y HORA
-            char fecha[30]="000000000000000";
-            for(int i = 0; i < 60; i++)
-            {
-                vTaskDelay(pdMS_TO_TICKS(1000));
+            char fecha[30] = "000000000000000";
+            bool resolved = false;
 
+            for(int i = 0; i < 30; i++)
+            {
+                gpio_set_level(LED_VERDE, 0);
+                // Blink red
+                gpio_set_level(LED_ROJO, 1);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                gpio_set_level(LED_ROJO, 0);
+                vTaskDelay(pdMS_TO_TICKS(500));
+
+                // Re-check conditions every second
                 rain = get_rain();
                 humidity = get_humedad_value();
                 inclination = get_inclinacion();
-                bool alert = (rain >= 20.0 && humidity >= 80) ||
+
+                alert = (rain >= 20.0 && humidity >= 80) ||
                      (rain >= 20.0 && inclination.inclinacionTotal >= 20.0);
-                if(!alert)
-                {
+                     
+                if(!alert) {
                     set_buzzer(false);
-                    set_led('G');
+                    set_led('G'); // go back to green
+                    resolved = true;
                     break;
                 }
+            }
 
-                if(i == 59)
-                {
-                    set_buzzer(true);
-                    set_led('E');
-                    // función que manda alerta al front RECORDAR MANDAR TAMBIÉN FECHA Y HORA
-                    send_to_front_task(humidity,rain,"ALERTA: Condiciones de lluvia y humedad elevadas mantenidas por 60 segundos.",inclination.inclinacionTotal,inclination.roll,inclination.pitch,fecha);
-                    ESP_LOGI("R", "%s", "ALERTA: Condiciones de lluvia y humedad elevadas mantenidas por 60 segundos.");
-                }
+            if(!resolved) {
+                set_buzzer(true);
+                set_led('E'); // solid red
+                send_to_front_task(humidity, rain,
+                                   "ALERTA PRECAUTIVA: Condiciones mantenidas por 30 segundos.",
+                                   inclination.inclinacionTotal, inclination.roll, inclination.pitch, fecha);
+                ESP_LOGI("R", "%s", "ALERTA PRECAUTIVA lanzada.");
             }
         }
+        
+
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -113,36 +132,44 @@ void critical_rain_task(void *pvParameters)
 
         if(alert)
         {
-            set_led('F');
-            // RECORDAR MANDAR FECHA Y HORA
-            char fecha[30]="000000000000000";
-            for(int i = 0; i < 120; i++)
-            {
-                vTaskDelay(pdMS_TO_TICKS(1000));
+            char fecha[30] = "000000000000000";
+            bool resolved = false;
 
+            for(int i = 0; i < 30; i++)
+            {
+                gpio_set_level(LED_VERDE, 0);
+                // Blink red
+                gpio_set_level(LED_ROJO, 1);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                gpio_set_level(LED_ROJO, 0);
+                vTaskDelay(pdMS_TO_TICKS(500));
+
+                // Re-check conditions every second
                 rain = get_rain();
                 humidity = get_humedad_value();
                 inclination = get_inclinacion();
-                bool alert = (rain >= 35.0 && humidity >= 90) ||
+
+                alert = (rain >= 35.0 && humidity >= 90) ||
                      (rain >= 35.0 && inclination.inclinacionTotal >= 30.0);
-                if(!alert)
-                {
+
+                if(!alert) {
                     set_buzzer(false);
-                    set_led('G');
+                    set_led('G'); // go back to green
+                    resolved = true;
                     break;
                 }
+            }
 
-                if(i == 119)
-                {
-                    set_buzzer(true);
-                    set_led('E');
-                    // función que manda alerta al front RECORDAR MANDAR TAMBIÉN FECHA Y HORA
-                    send_to_front_task(humidity,rain,"ALERTA CRITICA: Condiciones de lluvia y humedad elevadas mantenidas por 2 minutos.",inclination.inclinacionTotal,inclination.roll,inclination.pitch,fecha);
-                    ESP_LOGI("R", "%s", "ALERTA CRITICA: Condiciones de lluvia y humedad elevadas mantenidas por 2 minutos.");
-                }
+            if(!resolved) {
+                set_buzzer(true);
+                set_led('E'); // solid red
+                send_to_front_task(humidity, rain,
+                                   "ALERTA PRECAUTIVA: Condiciones mantenidas por 30 segundos.",
+                                   inclination.inclinacionTotal, inclination.roll, inclination.pitch, fecha);
+                ESP_LOGI("R", "%s", "ALERTA PRECAUTIVA lanzada.");
             }
         }
+       
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
-
