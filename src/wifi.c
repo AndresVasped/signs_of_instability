@@ -6,6 +6,9 @@
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_log.h"
+#include "esp_sntp.h"
+#include <time.h>
+
 
 /*inicializamos la flash con el nvs (non volatile storage)
 Que es la NVS y porque la necesitamos? en la memoria flash de la esp32 esta almacena un
@@ -167,3 +170,32 @@ bool tiene_wifi()
 }
 
 
+void init_time(void)
+{
+    ESP_LOGI("TIME", "Initializing SNTP...");
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, "pool.ntp.org");  // Use NTP server
+    sntp_init();
+
+    setenv("TZ", "GMT-5", 1);
+    tzset();
+
+    // Wait for time to be set
+    time_t now = 0;
+    struct tm timeinfo = { 0 };
+    int retry = 0;
+    const int retry_count = 10;
+
+    while (timeinfo.tm_year < (2016 - 1900) && ++retry < retry_count) {
+        ESP_LOGI("TIME", "Waiting for system time... (%d/%d)", retry, retry_count);
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        time(&now);
+        localtime_r(&now, &timeinfo);
+    }
+
+    if (timeinfo.tm_year > (2016 - 1900)) {
+        ESP_LOGI("TIME", "Time synchronized!");
+    } else {
+        ESP_LOGW("TIME", "Failed to sync time");
+    }
+}

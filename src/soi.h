@@ -33,6 +33,8 @@ funciones que necesitemos*/
 #define WIFI_SSID "squidslife"//nombre de la red wifi
 #define WIFI_PASS "squidwirelessmagic"//contraseña de la red wifi
 
+
+
 typedef struct
 {
     float roll;
@@ -70,6 +72,7 @@ Inclinaciones get_inclinacion(void);
 const char* get_orientacion(float roll, float pitch);
 void update_data(int humedad,float lluviaMMP,float inclinacion,float roll,float pitch,const char* alerta,const char* fecha);
 Datos get_sensor_data();
+void init_time(void);
 
 
 
@@ -79,6 +82,8 @@ void alert_rain_task(void *pvParameters);
 void critical_rain_task(void *pvParameters);
 void update_sensor_data_task(void *pvParameters);
 void lcd_task(void *pvParameters);
+void get_time_string(char *buffer, size_t max_len);
+
 
 
 //wifi

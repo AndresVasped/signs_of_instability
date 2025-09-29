@@ -47,6 +47,25 @@ static esp_err_t http_handler_get(httpd_req_t *req)
     return httpd_resp_send(req,json_buffer,len_json_buffer);
 }
 
+static esp_err_t http_handler_buzzer(httpd_req_t *req)
+{
+    char buf[10];
+    int ret = httpd_req_get_url_query_str(req, buf, sizeof(buf));
+    if (ret == ESP_OK) {
+        char param[10];
+        if (httpd_query_key_value(buf, "state", param, sizeof(param)) == ESP_OK) {
+            int state = atoi(param);
+            set_buzzer(state == 1);
+        }
+    }
+
+    
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+    return ESP_OK;
+}
+
+
 void http_init_server()
 {
     httpd_handle_t server = NULL;//servidor http
@@ -61,4 +80,15 @@ void http_init_server()
     
     };
     httpd_register_uri_handler(server, &dataLP);//definimos la estructura del edpoint
+    
+    static const httpd_uri_t buzzerEP = {
+        .uri       = "/buzzer",
+        .method    = HTTP_GET,
+        .handler   = http_handler_buzzer,
+        .user_ctx  = NULL
+    };
+    httpd_register_uri_handler(server, &buzzerEP); //definimos la estructura del edpoint
+
 }
+
+

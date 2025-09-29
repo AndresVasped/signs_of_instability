@@ -206,7 +206,7 @@ void lcd_task(void *pvParameters)
 
         // --- Row 2: Sensor data (no decimals) ---
         snprintf(line2, sizeof(line2),
-                 "I:%d R:%d H:%d%%",
+                 "I:%d L:%d H:%d%%",
                  (int)inclination.inclinacionTotal, (int)rain, humidity);
 
         clean_lcd();

@@ -10,6 +10,7 @@ void app_main()
     set_led('G');
     set_buzzer(false);
     wifi_sta_init();
+    init_time();
     while(!tiene_wifi())
     {
         vTaskDelay(pdMS_TO_TICKS(1000));

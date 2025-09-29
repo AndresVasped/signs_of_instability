@@ -1,67 +1,85 @@
-
 <template>
-  <span>Humedad: {{humedad}}</span><br>
-  <span>Lluvia: {{lluvia}}</span><br>
-  <span>Roll: {{roll}}</span><br>
-  <span>Pitch:{{pitch}}</span><br>
-  <span>Fecha:{{fecha}}</span><br>
-  <span>Alerta:{{alerta}}</span><br>
+  <div class="dashboard">
+    <h1>🌦️ Dashboard</h1>
+
+    <div class="cards">
+      <div class="card">
+        <h2>🌡️ Humedad</h2>
+        <p>{{ humedad }} %</p>
+      </div>
+      <div class="card">
+        <h2>🌧️ Lluvia</h2>
+        <p>{{ lluvia }} mm/h</p>
+      </div>
+      <div class="card">
+        <h2>📐 Roll</h2>
+        <p>{{ roll.toFixed(2) }}°</p>
+      </div>
+      <div class="card">
+        <h2>📏 Pitch</h2>
+        <p>{{ pitch.toFixed(2) }}°</p>
+      </div>
+      <div class="card">
+        <h2>🧭 Inclinación</h2>
+        <p>{{ inclinacion.toFixed(2) }}°</p>
+      </div>
+    </div>
+
+    <div class="extra">
+      <p><strong>📅 Fecha:</strong> {{ fecha }}</p>       
+    </div>
+
+    <div class="controls">
+      <button class="btn danger" @click="controlBuzzer(true)">🔊 Encender Buzzer</button>
+      <button class="btn success" @click="controlBuzzer(false)">🔇 Apagar Buzzer</button>
+    </div>
+  </div>
 </template>
 
-
-<style scoped>
-  body
-  {
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-    padding: 2rem;
-    background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-    color: var(--text-color);
-    min-height: 100vh;
-    box-sizing: border-box;
-  }
-</style>
-
-
 <script>
-import { ref, onMounted } from "vue";
-
-export default 
-{
-  data() 
-  {
+export default {
+  data() {
     return {
       humedad: 0,
       lluvia: 0,
       roll: 0,
       pitch: 0,
+      inclinacion: 0,
       fecha: '',
       alerta: ''
     }
   },
-  methods:{
-    async getData()
-    {
-      const ESP32_IP = "192.168.145.115"; // la IP que le asignó el Wi-Fi
+  methods: {
+    async getData() {
+      const ESP32_IP = "192.168.145.115"; 
       const url = `http://${ESP32_IP}/data`;
-      while(true)//constantemente va estar escuchando lo que le envia la esp32
-      {
-        try
-        {
-          const res=await fetch(url)
-          const d=await res.json()
-          console.log(d)
-          //aqui enviariamos los datos para que se muestren
-          // this.humedad = d.humedad;
+      while (true) {
+        try {
+          const res = await fetch(url);
+          const d = await res.json();
+          this.humedad = d.humedad;
+          this.lluvia = d.lluvia_mmph;
+          this.roll = d.roll;
+          this.pitch = d.pitch;
+          this.inclinacion = d.inclinacion;
+          this.fecha = d.fecha;
+          this.alerta = d.riesgo || d.alerta;
+        } catch (e) {
+          console.log('error', e);
         }
-        catch(e)
-        {
-          console.log('error',e);
-        }
-          // espera 1 segundo antes de volver a pedir
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     },
+
+    async controlBuzzer(state) {
+      const ESP32_IP = "192.168.145.115"; 
+      try {
+        
+        await fetch(`http://${ESP32_IP}/buzzer?state=${state ? 1 : 0}`);
+      } catch (e) {
+        console.log("Error controlling buzzer", e);
+      }
+    }
   },
   mounted() {
     this.getData();

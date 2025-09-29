@@ -1,4 +1,6 @@
 #include <soi.h> 
+#include <time.h>
+#include <sys/time.h>
 
 static smbus_info_t *smbus_info;
 static i2c_lcd1602_info_t *lcd_info;
@@ -122,6 +124,7 @@ void set_led(char value)
 
 void set_buzzer(bool state)
 {
+    
     if(state)
     {
         gpio_set_level(BUZZER,1);
@@ -130,6 +133,15 @@ void set_buzzer(bool state)
     {
         gpio_set_level(BUZZER,0);
     }
+}
+
+void get_time_string(char *buffer, size_t max_len)
+{
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    strftime(buffer, max_len, "%Y-%m-%d %H:%M:%S", &timeinfo);
 }
 
 
@@ -142,6 +154,10 @@ void update_sensor_data_task(void *pvParameters)
         Inclinaciones incl = get_inclinacion();
 
         char fecha[30];
+        get_time_string(fecha, sizeof(fecha));
+
+        update_data(humedad, lluvia, incl.inclinacionTotal, incl.roll, incl.pitch, "Normal", fecha);
+
         
 
         update_data(humedad, lluvia, incl.inclinacionTotal, incl.roll, incl.pitch, "Normal", fecha);
@@ -149,3 +165,5 @@ void update_sensor_data_task(void *pvParameters)
         vTaskDelay(pdMS_TO_TICKS(1000)); // update every second
     }
 }
+
+
