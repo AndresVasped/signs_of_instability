@@ -117,7 +117,13 @@ void set_led(char value)
     else if(value=='F')
     {
         gpio_set_level(LED_VERDE, 0);
-        gpio_set_level(LED_ROJO, 0);
+        for (;;)//hacemos que el Led rojo parpadee
+        {
+            gpio_set_level(LED_ROJO,1);
+            vTaskDelay(pdMS_TO_TICKS(500));
+            gpio_set_level(LED_ROJO,0);
+            vTaskDelay(pdMS_TO_TICKS(500));   
+        }
     }
     
 }
@@ -135,35 +141,7 @@ void set_buzzer(bool state)
     }
 }
 
-void get_time_string(char *buffer, size_t max_len)
-{
-    time_t now;
-    struct tm timeinfo;
-    time(&now);
-    localtime_r(&now, &timeinfo);
-    strftime(buffer, max_len, "%Y-%m-%d %H:%M:%S", &timeinfo);
-}
 
 
-void update_sensor_data_task(void *pvParameters)
-{
-    for(;;)
-    {
-        int humedad = get_humedad_value();
-        float lluvia = get_rain();
-        Inclinaciones incl = get_inclinacion();
-
-        char fecha[30];
-        get_time_string(fecha, sizeof(fecha));
-
-        update_data(humedad, lluvia, incl.inclinacionTotal, incl.roll, incl.pitch, "Normal", fecha);
-
-        
-
-        update_data(humedad, lluvia, incl.inclinacionTotal, incl.roll, incl.pitch, "Normal", fecha);
-
-        vTaskDelay(pdMS_TO_TICKS(1000)); // update every second
-    }
-}
 
 

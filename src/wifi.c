@@ -173,9 +173,9 @@ bool tiene_wifi()
 void init_time(void)
 {
     ESP_LOGI("TIME", "Initializing SNTP...");
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "pool.ntp.org");  // Use NTP server
-    sntp_init();
+    esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    esp_sntp_setservername(0, "pool.ntp.org");  // Use NTP server
+    esp_sntp_init();
 
     setenv("TZ", "GMT-5", 1);
     tzset();

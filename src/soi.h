@@ -13,7 +13,7 @@ funciones que necesitemos*/
 #include "math.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
+#include <mqtt_client.h>
 /*-----------------definimos los puertos de la esp32-----------------*/
 //sensores 
 #define PIN_HUMEDAD  GPIO_NUM_36
@@ -32,7 +32,8 @@ funciones que necesitemos*/
 //wifi
 #define WIFI_SSID "squidslife"//nombre de la red wifi
 #define WIFI_PASS "squidwirelessmagic"//contraseña de la red wifi
-
+//MQTT
+#define BROKER_URI "mqtt://192.168.73.1:1883"// aqui ponemos la ip de la raspberrypi
 
 
 typedef struct
@@ -73,21 +74,17 @@ const char* get_orientacion(float roll, float pitch);
 void update_data(int humedad,float lluviaMMP,float inclinacion,float roll,float pitch,const char* alerta,const char* fecha);
 Datos get_sensor_data();
 void init_time(void);
-
-
-
 //task
-void precuation_rain_task(void *pvParameters);
-void alert_rain_task(void *pvParameters);
-void critical_rain_task(void *pvParameters);
+void init_queue();
+void alerts_task(void *pvParameters);
+void publish_mqtt_task(void *pvParameters);
 void update_sensor_data_task(void *pvParameters);
-void lcd_task(void *pvParameters);
 void get_time_string(char *buffer, size_t max_len);
-
-
-
 //wifi
 esp_err_t wifi_sta_init();
 bool tiene_wifi();
 //http
 void http_init_server();
+//mqtt
+esp_mqtt_client_handle_t client_config();
+void publish(esp_mqtt_client_handle_t client);

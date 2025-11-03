@@ -16,7 +16,8 @@ void app_main()
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
     http_init_server();
-
+    esp_mqtt_client_handle_t mqtt_client=client_config();
+    init_queue();
     /*Acontinuacion vamos a hacer las tareas para cada task
     lo que haremos es asiganrle un tiempo en CPU por nivel de prioridad
     
@@ -35,19 +36,11 @@ void app_main()
     
     el tamaño promedio y lo que la documentacion dice es que con 4095 esta bastante bien*/
 
-    xTaskCreate(update_sensor_data_task, "update_sensor_data", 4096, NULL, 5, NULL);
+    xTaskCreate(alerts_task, "tarea de alertas", 8090, NULL, 5, NULL);
+    xTaskCreate(update_sensor_data_task, "update_sensor_data", 4096, NULL, 4, NULL);
+    xTaskCreate(publish_mqtt_task, "tarea critica", 4096, (void*)mqtt_client, 5, NULL);
+    
 
-    xTaskCreate(lcd_task, "lcd_task", 4096, NULL, 3, NULL);
-
-
-    //tarea con la maxima prioridad
-    xTaskCreate(critical_rain_task,"tarea critica",4096,NULL,5,NULL);
-
-    //tarea con prioridad media
-    xTaskCreate(alert_rain_task,"tarea de alerta",4096,NULL,4,NULL);
-
-    //tarea con prioridad baja
-    xTaskCreate(precuation_rain_task,"tarea de precaucion",4096,NULL,2,NULL);
 
     while(1) {
         vTaskDelay(pdMS_TO_TICKS(10000));

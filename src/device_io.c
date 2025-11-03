@@ -1,6 +1,5 @@
 #include <soi.h>
 
-
 int get_humedad_value()
 {
     int lectura = adc1_get_raw(ADC1_CHANNEL_0); // get raw ADC (0–4095)

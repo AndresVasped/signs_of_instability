@@ -9,6 +9,7 @@ pero sinceramente no entendi bien como implementarlo en el framework ESPIDF por 
 decidi utilizar por ahora long polling
 */
 
+/*
 static char json_buffer[256]; //buffer de json
 //funcion de datos json que enviaremos
 int json_structure()
@@ -32,10 +33,10 @@ int json_structure()
 //comunicacion get el cliente nos pedira datos constamente y nosotros con gusto se los enviaremos
 static esp_err_t http_handler_get(httpd_req_t *req)
 {
-    /*le decimos al front que vamos a enviar un json
+    le decimos al front que vamos a enviar un json
     esto es util porque en el front a la hora de hacer una promesa con fetch le podemos
     implementar el fetch(..).json()
-    para que capture el json automaticamente*/
+    para que capture el json automaticamente
 
     httpd_resp_set_type(req,"application/json");
 
@@ -46,7 +47,7 @@ static esp_err_t http_handler_get(httpd_req_t *req)
     int len_json_buffer=json_structure();
     return httpd_resp_send(req,json_buffer,len_json_buffer);
 }
-
+*/
 static esp_err_t http_handler_buzzer(httpd_req_t *req)
 {
     char buf[10];
@@ -72,6 +73,7 @@ void http_init_server()
     httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();//configuracion por defecto como poner el puerto en 80 numeros de conexiones..etc
     httpd_start(&server, &cfg);//iniciar el servidor http
 
+    /*
     static const httpd_uri_t dataLP = {
         .uri="/data",
         .method=HTTP_GET,
@@ -80,7 +82,7 @@ void http_init_server()
     
     };
     httpd_register_uri_handler(server, &dataLP);//definimos la estructura del edpoint
-    
+    */
     static const httpd_uri_t buzzerEP = {
         .uri       = "/buzzer",
         .method    = HTTP_GET,
