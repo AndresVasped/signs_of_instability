@@ -150,17 +150,16 @@ void publish_mqtt_task(void *pvParameters)
 {
     esp_mqtt_client_handle_t client = (esp_mqtt_client_handle_t) pvParameters;
     Datos data;
+
     for(;;)
     {
-
-        if(xQueueReceive(dataQueue,&data,portMAX_DELAY))
+        if (xQueueReceive(dataQueue, &data, portMAX_DELAY))
         {
-            publish(client);
+            publish(client, &data);
         }
-
     }
-
 }
+
 void alerts_task(void *pvParameters)
 {
     for(;;)

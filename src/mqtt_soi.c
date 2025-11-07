@@ -38,6 +38,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         case MQTT_EVENT_CONNECTED://El cliente ha establecido correctamente una conexión con el broker. El cliente ya está listo para enviar y recibir datos.
             ESP_LOGI("MQTT", "Conectado al broker MQTT");
             esp_mqtt_client_subscribe(client, "esp32/sensors", 0);//se suscribe automaticamente y al topic sensors
+            esp_mqtt_client_subscribe(client, "esp32/buzzer", 0);
             break;
 
         case MQTT_EVENT_DISCONNECTED:
@@ -47,6 +48,28 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             break;
         
     }
+
+    case MQTT_EVENT_DATA:
+    ESP_LOGI("MQTT", "Mensaje recibido en topic: %.*s", event->topic_len, event->topic);
+    ESP_LOGI("MQTT", "Contenido: %.*s", event->data_len, event->data);
+
+    if (strncmp(event->topic, "esp32/buzzer", event->topic_len) == 0) {
+        // Extract message
+        if (event->data_len > 0) {
+            char msg[8] = {0};
+            snprintf(msg, sizeof(msg), "%.*s", event->data_len, event->data);
+
+            if (strcmp(msg, "1") == 0) {
+                ESP_LOGI("MQTT", "Encendiendo buzzer...");
+                buzzer_on(); // you must implement this
+            } else if (strcmp(msg, "0") == 0) {
+                ESP_LOGI("MQTT", "Apagando buzzer...");
+                buzzer_off(); // you must implement this
+            }
+        }
+    }
+    break;
+
 }
 /*cofiguracion del cliente mqtt*/
 esp_mqtt_client_handle_t client_config()
@@ -79,10 +102,28 @@ esp_mqtt_client_handle_t client_config()
     return client;
 }
 
-void publish(esp_mqtt_client_handle_t client)
+void publish(esp_mqtt_client_handle_t client, const Datos *data)
 {
-    int len=json_structure();
-    esp_mqtt_client_publish(client,"esp32/sensors",json_buffer,len,0,0);
-    ESP_LOGI("MQTT", "Publicado correctamemte", len);
+    char json_buffer[256];
+    int len = snprintf(json_buffer, sizeof(json_buffer),
+        "{"
+        "\"humedad\":%d,"
+        "\"lluvia_mmph\":%.2f,"
+        "\"inclinacion\":%.2f,"
+        "\"roll\":%.2f,"
+        "\"pitch\":%.2f,"
+        "\"riesgo\":\"%s\","
+        "\"fecha\":\"%s\""
+        "}",
+        data->humedad,
+        data->lluvia_mmp,
+        data->inclinacion,
+        data->roll,
+        data->pitch,
+        data->alerta,
+        data->fecha);
+
+    esp_mqtt_client_publish(client, "esp32/sensors", json_buffer, len, 0, 0);
+    ESP_LOGI("MQTT", "Publicado correctamente: %s", json_buffer);
     vTaskDelay(pdMS_TO_TICKS(2000));
 }

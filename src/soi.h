@@ -31,9 +31,25 @@ funciones que necesitemos*/
 #define BUZZER GPIO_NUM_27
 //wifi
 #define WIFI_SSID "squidslife"//nombre de la red wifi
-#define WIFI_PASS "squidwirelessmagic"//contraseña de la red wifi
+#define WIFI_PASS "squid1234"//contraseña de la red wifi
 //MQTT
-#define BROKER_URI "mqtt://192.168.73.1:1883"// aqui ponemos la ip de la raspberrypi
+#define BROKER_URI "mqtt://192.168.11.152:1883"// aqui ponemos la ip de la raspberrypi
+
+#define BUZZER_PIN 26
+
+void buzzer_setup() {
+    gpio_reset_pin(BUZZER_PIN);
+    gpio_set_direction(BUZZER_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(BUZZER_PIN, 0);
+}
+
+void buzzer_on() {
+    gpio_set_level(BUZZER_PIN, 1);
+}
+
+void buzzer_off() {
+    gpio_set_level(BUZZER_PIN, 0);
+}
 
 
 typedef struct
@@ -87,4 +103,5 @@ bool tiene_wifi();
 void http_init_server();
 //mqtt
 esp_mqtt_client_handle_t client_config();
-void publish(esp_mqtt_client_handle_t client);
+void publish(esp_mqtt_client_handle_t client, const Datos *data);
+

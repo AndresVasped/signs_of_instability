@@ -13,15 +13,15 @@
       </div>
       <div class="card">
         <h2>📐 Roll</h2>
-        <p>{{ roll.toFixed(2) }}°</p>
+        <p>{{ roll != null ? roll.toFixed(2) : '0.00' }}°</p>
       </div>
       <div class="card">
         <h2>📏 Pitch</h2>
-        <p>{{ pitch.toFixed(2) }}°</p>
+        <p>{{ pitch != null ? pitch.toFixed(2) : '0.00' }}°</p>
       </div>
       <div class="card">
         <h2>🧭 Inclinación</h2>
-        <p>{{ inclinacion.toFixed(2) }}°</p>
+        <p>{{ inclinacion != null ? inclinacion.toFixed(2) : '0.00' }}°</p>
       </div>
     </div>
 
@@ -103,7 +103,7 @@ export default {
   methods: {
     async getData() 
     {
-      const client= mqtt.connect('ws://broker.emqx.io:8083/mqtt');//broker mqtt
+      const client= mqtt.connect("mqtt://192.168.11.152:1884");//broker mqtt
       client.on('connect',()=>{//conxion con el broker
         console.log('Conectado al broker MQTT por ws');
         client.subscribe('esp32/sensors');
@@ -115,9 +115,9 @@ export default {
           const d=JSON.parse(message.toString());//convertimos el buffer a objeto json
           this.humedad = d.humedad;
           this.lluvia = d.lluvia_mmph;
-          this.roll = d.roll;
-          this.pitch = d.pitch;
-          this.inclinacion = d.inclinacion;
+          this.roll = Number(d.roll) || 0;
+          this.pitch = Number(d.pitch) || 0;
+          this.inclinacion = Number(d.inclinacion) || 0;
           this.fecha = d.fecha;
           this.alerta = d.riesgo || d.alerta;
           this.lastAlerts();
@@ -132,16 +132,20 @@ export default {
       
     },
 
-    async controlBuzzer(state) {
-      const ESP32_IP = "192.168.145.115"; 
+    controlBuzzer(state) {
       try {
-        
-        await fetch(`http://${ESP32_IP}/buzzer?state=${state ? 1 : 0}`);
-      } catch (e) {
-        console.log("Error controlling buzzer", e);
+        if (!this.client || !this.client.connected) {
+          console.warn("⚠️ MQTT client not connected.");
+          return;
+        }
+        const topic = "esp32/buzzer";
+        const message = state ? "1" : "0";
+        this.client.publish(topic, message);
+        console.log(`🔊 Buzzer command sent: ${message}`);
+      } catch (error) {
+        console.error("❌ Error controlling buzzer:", error);
       }
     },
-
     lastAlerts()
     {
       if(this.alerta==="ALERTA PRECAUTIVA: Condiciones de lluvia y humedad elevadas mantenidas por 30 segundos.")
