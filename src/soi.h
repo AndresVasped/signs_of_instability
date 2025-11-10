@@ -14,6 +14,7 @@ funciones que necesitemos*/
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <mqtt_client.h>
+#include "cJSON.h"
 /*-----------------definimos los puertos de la esp32-----------------*/
 //sensores 
 #define PIN_HUMEDAD  GPIO_NUM_36
@@ -33,23 +34,11 @@ funciones que necesitemos*/
 #define WIFI_SSID "squidslife"//nombre de la red wifi
 #define WIFI_PASS "squid1234"//contraseña de la red wifi
 //MQTT
-#define BROKER_URI "mqtt://192.168.11.152:1883"// aqui ponemos la ip de la raspberrypi
+#define BROKER_URI "mqtt://192.168.200.153:1883"// aqui ponemos la ip de la raspberrypi
 
 #define BUZZER_PIN 26
 
-void buzzer_setup() {
-    gpio_reset_pin(BUZZER_PIN);
-    gpio_set_direction(BUZZER_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_level(BUZZER_PIN, 0);
-}
-
-void buzzer_on() {
-    gpio_set_level(BUZZER_PIN, 1);
-}
-
-void buzzer_off() {
-    gpio_set_level(BUZZER_PIN, 0);
-}
+extern char json_buffer[256];
 
 
 typedef struct
@@ -72,6 +61,9 @@ typedef struct
 }Datos;
 
 //funciones de set
+void buzzer_setup(void);
+void buzzer_on(void);
+void buzzer_off(void);
 void set_GPIO(void);
 void set_i2c(void);
 void set_adc(void);
@@ -80,7 +72,9 @@ void set_buzzer(bool state);
 void lcd_init();
 void write_lcd(const char *text,int column,int row);
 void clean_lcd();
+extern int json_structure(void);
 
+extern Datos current_data;
 //funciones de get
 void set_led(char value);
 int get_humedad_value(void);

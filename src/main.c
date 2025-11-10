@@ -35,7 +35,7 @@ void app_main()
     o si fueran mas sencillas pues menos como 2kb
     
     el tamaño promedio y lo que la documentacion dice es que con 4095 esta bastante bien*/
-
+    
     xTaskCreate(alerts_task, "tarea de alertas", 8090, NULL, 5, NULL);
     xTaskCreate(update_sensor_data_task, "update_sensor_data", 4096, NULL, 4, NULL);
     xTaskCreate(publish_mqtt_task, "tarea critica", 4096, (void*)mqtt_client, 5, NULL);

@@ -101,7 +101,7 @@ const char* get_orientacion(float roll, float pitch)
     
 }
 
-static Datos current_data={
+Datos current_data={
     .humedad=0,
     .lluvia_mmp=0.0f,
     .roll=0.0f,
@@ -122,6 +122,7 @@ void update_data(int humedad,float lluviaMMP,float inclinacion,float roll,float 
     //evitamos truncamiento
     strncpy(current_data.alerta, alerta, sizeof(current_data.alerta) - 1);
     current_data.alerta[sizeof(current_data.alerta) - 1] = '\0';
+    ESP_LOGI("ALERTS", "Nuevo estado de alerta: %s", current_data.alerta);
     
     strncpy(current_data.fecha, fecha, sizeof(current_data.fecha) - 1);
     current_data.fecha[sizeof(current_data.fecha) - 1] = '\0';

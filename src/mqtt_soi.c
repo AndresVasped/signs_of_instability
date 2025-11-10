@@ -7,7 +7,7 @@ donde enviara todos los datos que le vayamos a pasar para asi poderlos capturarl
 enviarlo a otros dispositivos suscritos*/
 
 
-static char json_buffer[256]; //buffer de json
+char json_buffer[256]; //buffer de json
 //funcion de datos json que enviaremos
 int json_structure()
 {
@@ -35,42 +35,46 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
     switch ((esp_mqtt_event_id_t)event_id)
     {
-        case MQTT_EVENT_CONNECTED://El cliente ha establecido correctamente una conexión con el broker. El cliente ya está listo para enviar y recibir datos.
+        case MQTT_EVENT_CONNECTED:
             ESP_LOGI("MQTT", "Conectado al broker MQTT");
-            esp_mqtt_client_subscribe(client, "esp32/sensors", 0);//se suscribe automaticamente y al topic sensors
+            esp_mqtt_client_subscribe(client, "esp32/sensors", 0);
             esp_mqtt_client_subscribe(client, "esp32/buzzer", 0);
             break;
 
         case MQTT_EVENT_DISCONNECTED:
-            ESP_LOGW("MQTT","Desconeccion con el broker");
+            ESP_LOGW("MQTT", "Desconexión con el broker");
             break;
+
+        case MQTT_EVENT_DATA:
+            ESP_LOGI("MQTT", "Mensaje recibido en topic: %.*s", event->topic_len, event->topic);
+            ESP_LOGI("MQTT", "Contenido: %.*s", event->data_len, event->data);
+
+            if (strncmp(event->topic, "esp32/buzzer", event->topic_len) == 0)
+            {
+                if (event->data_len > 0)
+                {
+                    char msg[8] = {0};
+                    snprintf(msg, sizeof(msg), "%.*s", event->data_len, event->data);
+
+                    if (strcmp(msg, "1") == 0)
+                    {
+                        ESP_LOGI("MQTT", "Encendiendo buzzer...");
+                        buzzer_on();
+                    }
+                    else if (strcmp(msg, "0") == 0)
+                    {
+                        ESP_LOGI("MQTT", "Apagando buzzer...");
+                        buzzer_off();
+                    }
+                }
+            }
+            break;
+
         default:
             break;
-        
     }
-
-    case MQTT_EVENT_DATA:
-    ESP_LOGI("MQTT", "Mensaje recibido en topic: %.*s", event->topic_len, event->topic);
-    ESP_LOGI("MQTT", "Contenido: %.*s", event->data_len, event->data);
-
-    if (strncmp(event->topic, "esp32/buzzer", event->topic_len) == 0) {
-        // Extract message
-        if (event->data_len > 0) {
-            char msg[8] = {0};
-            snprintf(msg, sizeof(msg), "%.*s", event->data_len, event->data);
-
-            if (strcmp(msg, "1") == 0) {
-                ESP_LOGI("MQTT", "Encendiendo buzzer...");
-                buzzer_on(); // you must implement this
-            } else if (strcmp(msg, "0") == 0) {
-                ESP_LOGI("MQTT", "Apagando buzzer...");
-                buzzer_off(); // you must implement this
-            }
-        }
-    }
-    break;
-
 }
+
 /*cofiguracion del cliente mqtt*/
 esp_mqtt_client_handle_t client_config()
 {
